@@ -63,64 +63,13 @@ $selectedCategory = isset($_GET['category']) ? $_GET['category'] : 'wszystko';
 
 // Filtrowanie żartów na podstawie wybranej kategorii
 $filteredJokes = array_filter($_SESSION['jokes'], function ($joke) use ($selectedCategory) {
-    return $selectedCategory == 'wszystko' || $joke['category'] === $selectedCategory;
+    return $selectedCategory === 'wszystko' || $joke['category'] === $selectedCategory;
 });
 
 // Unikalne kategorie
 $categories = array_unique(array_column($_SESSION['jokes'], 'category'));
 array_unshift($categories, 'wszystko'); // Dodaj opcję "wszystko"
 
-// Dodaj żart do sesji
-if (isset($_POST['new_joke']) && isset($_POST['new_category'])) {
-    $new_joke = [
-        'joke' => htmlspecialchars($_POST['new_joke']),
-        'category' => htmlspecialchars($_POST['new_category'])
-    ];
-    $_SESSION['jokes'][] = $new_joke;
-    header("Location: index.php"); // Przekierowanie po dodaniu żartu
-    exit;
-}
+header("Content-type: text/json");
+echo json_encode($filteredJokes);
 ?>
-
-<!DOCTYPE html>
-<html lang="pl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <title>Żarty Aplikacja</title>
-</head>
-<body>
-    <div class="container">
-        <h1>Żarty</h1>
-        <div class="filter">
-            <form method="GET" action="">
-                <label for="category">Wybierz kategorię:</label>
-                <select name="category" id="category" onchange="this.form.submit()">
-                    <?php foreach ($categories as $category): ?>
-                        <option value="<?= $category ?>" <?= $selectedCategory == $category ? 'selected' : '' ?>>
-                            <?= ucfirst($category) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </form>
-        </div>
-        
-        <form id="addJokeForm" method="POST">
-            <input type="text" name="new_joke" placeholder="Dodaj nowy żart" required>
-            <input type="text" name="new_category" placeholder="Kategoria" required>
-            <button type="submit">Dodaj żart</button>
-        </form>
-
-        <div class="jokes" id="jokeList">
-            <?php foreach ($filteredJokes as $joke): ?>
-                <div class="joke">
-                    <p><?= $joke['joke'] ?></p>
-                    <span class="category"><?= $joke['category'] ?></span>
-                </div>
-            <?php endforeach; ?>
-        </div>
-    </div>
-    <script src="script.js"></script>
-</body>
-</html>
